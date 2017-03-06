@@ -9,7 +9,7 @@ def get_event_list():
 
 	return_val = []
 	for i in jsonvar:
-		return_val.append(sEvent(i))
+		return_val.append(Event(i))
 	return return_val
 
 def get_match(matchkey):
@@ -39,23 +39,23 @@ class Event(object):
 		self.event_type_string = event_dict["event_type_string"]
 		self.week = event_dict["week"]
 
-		def get_key(self):
-			return self.key
+	def get_key(self):
+		return self.key
 
-		def get_name(self):
-			return self.name
+	def get_name(self):
+		return self.name
 
-		def get_event_type(self):
-			return self.event_type_string
+	def get_event_type(self):
+		return self.event_type_string
 
-		def get_week(self):
-			if self.key == "2017cmptx":
-				return 8
-			if self.key == "2017cmpmo":
-				return 9
-			if not isinstance(self.week, int):
-				return -1
-			return int(self.week) + 1
+	def get_week(self):
+		if self.key == "2017cmptx":
+			return 8
+		if self.key == "2017cmpmo":
+			return 9
+		if not isinstance(self.week, int):
+			return -1
+		return int(self.week) + 1
 
 class Match(object):
 	def __init__(self, match_dict):
@@ -63,22 +63,41 @@ class Match(object):
 		self.key = match_dict["key"].encode('ascii', 'ignore')
 		self.level = match_dict["comp_level"]
 		self.match_num = match_dict["match_number"]
+		self.bad = False
+		if str(match_dict["score_breakdown"]) == "None":
+			self.bad = True
+			return 
 		self.blue_alliance_performance = match_dict["score_breakdown"]["blue"]
 		self.red_alliance_performance = match_dict["score_breakdown"]["red"]
 
-		def get_key(self):
-			return self.key
+	def is_bad(self):
+		return self.bad
 
-		def get_level(self):
-			return self.level
+	def get_key(self):
+		return self.key
 
-		def get_match_num(self):
-			return self.match_num
+	def get_level(self):
+		return self.level
 
-		def get_totals(self):
-			return self.blue_alliance_performance["totalPoints"], self.red_alliance_performance["totalPoints"]
+	def get_match_num(self):
+		return self.match_num
 
-		def get_takeoffs(self):
-			blue_takeoffs = self.blue_alliance_performance["teleopTakeoffPoints"]
-			red_takeoffs = self.red_alliance_performance["teleopTakeoffPoints"]
-			return blue_takeoffs, red_takeoffs
+	def get_totals(self):
+		return self.blue_alliance_performance["totalPoints"], self.red_alliance_performance["totalPoints"]
+
+	def get_takeoffs(self):
+		blue_takeoffs = 0
+		red_takeoffs = 0
+		if self.blue_alliance_performance["touchpadNear"] == "ReadyForTakeoff":
+			blue_takeoffs += 1
+		if self.red_alliance_performance["touchpadNear"] == "ReadyForTakeoff":
+			red_takeoffs += 1
+		if self.blue_alliance_performance["touchpadMiddle"] == "ReadyForTakeoff":
+			blue_takeoffs += 1
+		if self.red_alliance_performance["touchpadMiddle"] == "ReadyForTakeoff":
+			red_takeoffs += 1
+		if self.blue_alliance_performance["touchpadFar"] == "ReadyForTakeoff":
+			blue_takeoffs += 1
+		if self.red_alliance_performance["touchpadFar"] == "ReadyForTakeoff":
+			red_takeoffs += 1
+		return blue_takeoffs, red_takeoffs
